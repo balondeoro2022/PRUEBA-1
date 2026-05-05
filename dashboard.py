@@ -15,22 +15,20 @@ st.markdown("---")
 
 @st.cache_data
 def cargar_datos():
-    # USANDO RUTA ABSOLUTA PARA EVITAR EL ERROR DE ARCHIVO NO ENCONTRADO
-    archivo = "/analisis.xlsx"
+    # RUTA RELATIVA PARA GITHUB
+    archivo = "analisis.xlsx"
     try:
         df = pd.read_excel(archivo, sheet_name='Base_Datos_Integrada')
-        # Convertimos a fecha, ignorando errores si hay celdas vacías
         df['fecha_hora'] = pd.to_datetime(df['fecha_hora'], errors='coerce')
         return df
     except Exception as e:
         return e
 
-
 df = cargar_datos()
 
 if isinstance(df, Exception):
     st.error(f"Error al cargar el archivo: {df}")
-    st.info("Asegúrate de que el archivo se llame 'analisis.xlsx' y esté en: /Users/macbook/Documents/PRUEBA 1/")
+    st.info("Asegúrate de que 'analisis.xlsx' esté subido a tu repositorio de GitHub.")
 else:
     # 2. revisa la calidad de datos
     st.sidebar.header("Calidad de Datos")
