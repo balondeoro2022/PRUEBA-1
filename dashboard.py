@@ -16,7 +16,7 @@ st.markdown("---")
 @st.cache_data
 def cargar_datos():
     # USANDO RUTA ABSOLUTA PARA EVITAR EL ERROR DE ARCHIVO NO ENCONTRADO
-    archivo = "analisis.xlsx"
+    archivo = "/Users/macbook/Documents/PRUEBA 1/analisis.xlsx"
     try:
         df = pd.read_excel(archivo, sheet_name='Base_Datos_Integrada')
         # Convertimos a fecha, ignorando errores si hay celdas vacías
@@ -48,15 +48,26 @@ else:
     df_filtrado = df[df['proceso'].isin(proceso_sel)]
 
     # Pestañas para los puntos solicitados
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+
         "Estadística Descriptiva",
+
         "Tablas de Frecuencia",
+
         "Gráficos Básicos",
+
         "Análisis Avanzado",
-        "Alertas Predictivas"
+
+        "Alertas Predictivas",
+        
+        "Resumen Final"
+
     ])
 
-    # 3. ESTADÍSTICA DESCRIPTIVA
+
+   
+    #3. ESTADÍSTICA DESCRIPTIVA
     with tab1:
         st.header("Resumen de la Base de Datos y Distribución de Fallas")
         
@@ -396,3 +407,65 @@ else:
                 <strong>Lectura:</strong> {row['valor_detectado']:.2f} | <strong>Estado:</strong> <span style="color:{color}">{estado}</span>
             </div>
             """, unsafe_allow_html=True)
+
+
+   # ---------------------------------------------------------
+    # NUEVA PESTAÑA 6: RESUMEN EJECUTIVO Y CONCLUSIONES AUTOMATIZADAS
+    # ---------------------------------------------------------
+    with tab6:
+        st.header("Resumen Final")
+        
+        # Referencia técnica directa
+        st.markdown("""
+        **Referencia :**
+        * **Eje X:** Temperatura detectada (°C).
+        * **Eje Y:** Frecuencia (cantidad de registros).
+        * **Picos:** Puntos de mayor incidencia en el proceso.
+        """)
+
+        st.info("Diagnóstico automático basado en la distribución de datos históricos.")
+
+        if df_filtrado.empty:
+            st.warning("Selecciona procesos en la barra lateral para generar el resumen.")
+        else:
+            for proceso in df_filtrado['proceso'].unique():
+                st.markdown(f"### Análisis de Proceso: {proceso}")
+                col_graf, col_txt = st.columns([2, 1])
+                
+                df_proc_res = df_filtrado[(df_filtrado['proceso'] == proceso) & (df_filtrado['sensor'] == 'RTD_PT100')]
+                
+                if not df_proc_res.empty:
+                    with col_graf:
+                        fig_hist = px.histogram(
+                            df_proc_res, x="valor_detectado", 
+                            nbins=20, 
+                            title=f"Distribución de Carga Térmica: {proceso}",
+                            labels={'valor_detectado': 'Temperatura (°C)', 'count': 'Frecuencia'},
+                            color_discrete_sequence=['#4B8BBE'],
+                            marginal="rug"
+                        )
+                        fig_hist.update_layout(height=350, showlegend=False, margin=dict(t=30, b=0, l=0, r=0))
+                        st.plotly_chart(fig_hist, use_container_width=True)
+
+                    with col_txt:
+                        st.write("**Estado del Proceso:**")
+                        
+                        media = df_proc_res['valor_detectado'].mean()
+                        std_dev = df_proc_res['valor_detectado'].std()
+                        conteo = len(df_proc_res)
+                        
+                        if std_dev < 2:
+                            estabilidad = "🟢 **Alta Estabilidad:** Poca variación detectada."
+                        else:
+                            estabilidad = "🟡 **Variabilidad:** Inestabilidad en las lecturas térmicas."
+                        
+                        if media > df_proc_res['valor_detectado'].median():
+                            tendencia = "⚠️ **Sesgo Positivo:** Tendencia a registros sobre la media."
+                        else:
+                            tendencia = "✅ **Normalidad:** Registros concentrados en rangos seguros."
+
+                        st.success(estabilidad)
+                        st.info(tendencia)
+                        st.markdown(f"**Muestras analizadas:** {conteo}")
+                
+                st.markdown("---")
