@@ -16,7 +16,7 @@ st.markdown("---")
 @st.cache_data
 def cargar_datos():
     # USANDO RUTA ABSOLUTA PARA EVITAR EL ERROR DE ARCHIVO NO ENCONTRADO
-    archivo = "/Users/macbook/Documents/PRUEBA 1/analisis.xlsx"
+    archivo = "/analisis.xlsx"
     try:
         df = pd.read_excel(archivo, sheet_name='Base_Datos_Integrada')
         # Convertimos a fecha, ignorando errores si hay celdas vacías
